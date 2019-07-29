@@ -22,31 +22,33 @@ namespace VidyoConnector.ViewModel
     public class VidyoConnectorViewModel : INotifyPropertyChanged
     {
         private Connector _connector;
-        //private IntPtr _primeHandle;
-        //private IntPtr _secondHandle;
-        //private IntPtr _thirdHandle;
-        //private IntPtr _fourthHandle;
-        //private IntPtr _fifthHandle;
-        //private readonly object _LayoutLock = new object();
+        
         private IntPtr _primehandle;
         private IntPtr _localHandle;
+
         private uint remoteParticipantCount = 0;
+
         private Dictionary<string, Tuple<uint, uint, IntPtr>> _wfHostSizes = new Dictionary<string, Tuple<uint, uint, IntPtr>>();
         private Dictionary<string, RemoteCamera> _ParticipantCameraMapping = new Dictionary<string, RemoteCamera>();
         private Dictionary<string, RemoteCamera> _UnassignedRemoteParticipants = new Dictionary<string, RemoteCamera>();
         private Dictionary<string, Tuple<uint, IntPtr>> _participantHandleMapping = new Dictionary<string, Tuple<uint, IntPtr>>();
         private Dictionary<string, RemoteWindowShare> _UnassignedRemoteWindowShares = new Dictionary<string, RemoteWindowShare>();
+
         private SortedList<uint, IntPtr> _sortedHandles = new SortedList<uint, IntPtr>();
+
         private Tuple<uint, uint> _primeDimensions;
         private Tuple<uint, uint> _localDimensions;        
         private string _primeOccupantId;        
+        
+        
+        private Participant _LoudestParticipant;
+
+        private LocalCamera _SelectedCamera;
+
+        private bool _localCameraAssigned = false;
         private bool _primeOccupied = false;
         private bool _remoteWindowSharePresent = false;
-        //private List<Participant> _AssignedRemoteParticipants = new List<Participant>();
-        private Participant _LoudestParticipant;
-        private LocalCamera _SelectedCamera;
-        private bool _localCameraAssigned = false;
-
+        
         private const string PATIENT = "patient";
         private const string WF_PRIME = "wfHost_prime";
         private const string WF_SECOND = "wfHost_second";
@@ -671,7 +673,7 @@ namespace VidyoConnector.ViewModel
                 if (!_primeOccupied)
                 {
                     _connector.AssignViewToRemoteCamera(_primehandle, cameraModel.Camera, false, false);
-                    _connector.ShowViewAt(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
+                    _connector.ShowViewAtPoints(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
                     _primeOccupantId = cameraModel.Participant.GetId();
                     _primeOccupied = true;
                 }
@@ -732,7 +734,7 @@ namespace VidyoConnector.ViewModel
 
                             _connector.HideView(p.Value.Item2);
                             _connector.AssignViewToRemoteCamera(_primehandle, _ParticipantCameraMapping[p.Key], false, false);
-                            _connector.ShowViewAt(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
+                            _connector.ShowViewAtPoints(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
                             _primeOccupied = true;
                             _primeOccupantId = p.Key;
                             break;
@@ -784,14 +786,14 @@ namespace VidyoConnector.ViewModel
                     
                     _connector.HideView(_primehandle);
                     _connector.AssignViewToRemoteCamera(_primehandle, camera, false, false);
-                    _connector.ShowViewAt(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
+                    _connector.ShowViewAtPoints(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
 
                     if (_primeOccupied)
                     {
                         var swap_camera = _ParticipantCameraMapping[_primeOccupantId];
                         _connector.HideView(p.Value.Item2);
                         _connector.AssignViewToRemoteCamera(p.Value.Item2, swap_camera, true, false);
-                        _connector.ShowViewAt(dim.Value.Item3, 0, 0, dim.Value.Item1, dim.Value.Item2);
+                        _connector.ShowViewAtPoints(dim.Value.Item3, 0, 0, dim.Value.Item1, dim.Value.Item2);
                     }
                     else
                     {
@@ -802,7 +804,7 @@ namespace VidyoConnector.ViewModel
                 {
                     _connector.HideView(_primehandle);
                     _connector.AssignViewToRemoteCamera(_primehandle, camera, false, false);
-                    _connector.ShowViewAt(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
+                    _connector.ShowViewAtPoints(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);
                 }
                 _primeOccupied = true;
                 _primeOccupantId = id;
@@ -858,7 +860,7 @@ namespace VidyoConnector.ViewModel
                     _primeOccupantId = newShare.Key;
                     _connector.HideView(_primehandle);
                     _connector.AssignViewToRemoteWindowShare(_primehandle, newShare.Value, false, false);
-                    _connector.ShowViewAt(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);                    
+                    _connector.ShowViewAtPoints(_primehandle, 0, 0, _primeDimensions.Item1, _primeDimensions.Item2);                    
                 }
                 else
                 {
